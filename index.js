@@ -17,7 +17,7 @@ const generateId = ()=> Math.floor(Math.random()*100000)
 
 app.get('/api/persons', (request, response, next) => {
   Person.find({}).then(persons => {
-    response.json(persons)
+    response.json(persons.map(person => person.toJSON()))
   }).catch(error => next(error))
 })
 
