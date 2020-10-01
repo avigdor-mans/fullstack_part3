@@ -50,25 +50,21 @@ app.get('/api/persons/:id', (request, response, next) => {
         error: "name or number is missing"
       })
     }
-    Person.find({name:body.name}).then(result=>{
-      if(result.length>0){
-        return response.status(400).json({
-          error: "name must be unique"
-        })
-      }
-    })
   
     const person = new Person({
       'name': body.name,
       'number': body.number,
       'id': generateId()
     })
-    person.save().then(savedPerson => {
-      response.json(savedPerson.toJSON())
-    }).catch((error) => {
-      assert.isNotOk(error,'Promise error');
-      done();
-    });
+
+    person.save()
+      .then(savedPerson => savedPerson.toJSON())
+      .then(savedAndFormattedPerson => {
+        response.json(savedAndFormattedPerson)
+      }).catch((error) => {
+        assert.isNotOk(error,'Promise error');
+        done();
+      });
   })
 
   app.put('/api/persons/:id', (request, response, next) => {
@@ -93,7 +89,9 @@ app.get('/api/persons/:id', (request, response, next) => {
     console.error(error.message)
     if (error.name === 'CastError') {
       return response.status(400).send({ error: 'malformatted id' })
-    } 
+    } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+    }
     next(error)
   }
   app.use(errorHandler)
