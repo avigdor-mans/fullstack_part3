@@ -11,7 +11,7 @@ morgan.token('data', (res) => JSON.stringify(res.body))
 
 const Person = require('./models/persons')
 
-app.get('/api/persons', (request, response, next) => {
+app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
     response.json(persons.map(person => person.toJSON()))
   })
@@ -47,27 +47,27 @@ app.post('/api/persons', (request, response,next) => {
       error: 'name or number is missing'
     })
   }
-  
+
   const person = new Person({
     'name': body.name,
     'number': body.number,
   })
 
   person.save()
-  .then(savedPerson => {
-    response.json(savedPerson.toJSON())
-  }).catch(error => next(error))
+    .then(savedPerson => {
+      response.json(savedPerson.toJSON())
+    }).catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
   const body = request.body
-  
+
   const person = {
     name: body.name,
     number: body.number
   }
-  
-  Person.findByIdAndUpdate(request.params.id, person, { new: true})
+
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
     .then(updatedPerson => response.json(updatedPerson))
     .catch(error => next(error))
 })
@@ -87,7 +87,7 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 app.use(errorHandler)
-  
+
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
