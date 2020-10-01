@@ -11,13 +11,10 @@ morgan.token('data', (res) => JSON.stringify(res.body))
 
 const Person = require('./models/persons')
 
-
-const generateId = ()=> Math.floor(Math.random()*100000)
-
 app.get('/api/persons', (request, response, next) => {
   Person.find({}).then(persons => {
     response.json(persons.map(person => person.toJSON()))
-  }).catch(error => next(error))
+  })
 })
 
 app.get('/info', async (request, response) => {
@@ -42,8 +39,9 @@ app.delete('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response,next) => {
   const body = request.body
+
   if(!body || !body.name || !body.number){
     return response.status(400).json({
       error: 'name or number is missing'
@@ -53,17 +51,12 @@ app.post('/api/persons', (request, response) => {
   const person = new Person({
     'name': body.name,
     'number': body.number,
-    'id': generateId()
   })
 
   person.save()
-    .then(savedPerson => savedPerson.toJSON())
-    .then(savedAndFormattedPerson => {
-      response.json(savedAndFormattedPerson)
-    }).catch((error) => {
-      assert.isNotOk(error,'Promise error')
-      done()
-    })
+  .then(savedPerson => {
+    response.json(savedPerson.toJSON())
+  }).catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
